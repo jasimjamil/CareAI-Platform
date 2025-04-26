@@ -1387,23 +1387,35 @@ def run_streamlit():
             st.markdown('<div class="chart-container">', unsafe_allow_html=True)
             
             if analytics["agent_types"]:
+                # Make sure pandas and plotly are properly imported
+                import pandas as pd
                 import plotly.express as px
                 
-                # Create pie chart data
-                agent_data = pd.DataFrame({
-                    "Type": list(analytics["agent_types"].keys()),
-                    "Count": list(analytics["agent_types"].values())
-                })
-                
-                # Create donut chart
-                fig = px.pie(agent_data, values="Count", names="Type", hole=0.4,
-                           color_discrete_sequence=px.colors.qualitative.Bold)
-                fig.update_layout(
-                    margin=dict(l=20, r=20, t=20, b=20),
-                    height=300,
-                    showlegend=True
-                )
-                st.plotly_chart(fig, use_container_width=True)
+                try:
+                    # Create pie chart data with error handling
+                    agent_types_keys = list(analytics["agent_types"].keys())
+                    agent_types_values = list(analytics["agent_types"].values())
+                    
+                    if agent_types_keys and agent_types_values:
+                        agent_data = pd.DataFrame({
+                            "Type": agent_types_keys,
+                            "Count": agent_types_values
+                        })
+                        
+                        # Create donut chart
+                        fig = px.pie(agent_data, values="Count", names="Type", hole=0.4,
+                                  color_discrete_sequence=px.colors.qualitative.Bold)
+                        fig.update_layout(
+                            margin=dict(l=20, r=20, t=20, b=20),
+                            height=300,
+                            showlegend=True
+                        )
+                        st.plotly_chart(fig, use_container_width=True)
+                    else:
+                        st.info("No agent type data available.")
+                except Exception as e:
+                    st.error(f"Error creating agent types chart: {str(e)}")
+                    st.info("Try creating more agents with different types.")
             else:
                 st.markdown("""
                 <div class="empty-state">
@@ -1768,9 +1780,9 @@ def run_streamlit():
                         
                         # Process message based on agent type
                         if agent["type"] == "pharmacy":
-                            response = asyncio.run(pharmacy_ask(chat_message))
+                            response = sync_pharmacy_ask(chat_message)
                         else:
-                            response = asyncio.run(infusion_ask(chat_message))
+                            response = sync_infusion_ask(chat_message)
                         
                         # Add agent response to chat history
                         st.session_state.chat_messages.append({"is_user": False, "text": response.response})
@@ -2177,3 +2189,26 @@ def setup_whatsapp_web_page():
                     st.error(f"Failed to send message. Error: {response.text}")
             except Exception as e:
                 st.error(f"Error sending message: {e}")
+
+# Create a synchronous wrapper for async chat functions
+def sync_pharmacy_ask(chat_message):
+    """Synchronous wrapper for pharmacy_ask"""
+    # This avoids the asyncio.run() within Streamlit's own event loop
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        result = loop.run_until_complete(pharmacy_ask(chat_message))
+        return result
+    finally:
+        loop.close()
+
+def sync_infusion_ask(chat_message):
+    """Synchronous wrapper for infusion_ask"""
+    # This avoids the asyncio.run() within Streamlit's own event loop
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        result = loop.run_until_complete(process_chat_message(chat_message, "infusion"))
+        return result
+    finally:
+        loop.close()
