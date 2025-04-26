@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+*.so
+.env
+.venv
+env/
+venv/
+agentic_cs.db

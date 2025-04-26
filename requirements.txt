@@ -1,0 +1,10 @@
+streamlit
+fastapi
+pandas
+plotly
+altair
+sqlite3
+python-telegram-bot
+uuid
+twilio
+google-generativeai
