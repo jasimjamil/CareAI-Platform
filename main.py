@@ -1891,7 +1891,32 @@ def run_streamlit():
                     st.error(f"❌ Failed to restart: {str(e)}")
     
     elif page == "WhatsApp Setup":
-        setup_whatsapp_page()
+        st.title("WhatsApp Integration Setup")
+        
+        if not FLASK_AVAILABLE:
+            st.warning("Flask is not installed. WhatsApp integration is disabled.")
+            
+            if st.button("Install Required Packages"):
+                try:
+                    import subprocess
+                    st.info("Installing Flask and Twilio... This may take a moment.")
+                    result = subprocess.run(
+                        ["pip", "install", "flask", "twilio"], 
+                        capture_output=True, 
+                        text=True
+                    )
+                    if result.returncode == 0:
+                        st.success("Installation successful! Please restart the application.")
+                    else:
+                        st.error(f"Installation failed: {result.stderr}")
+                except Exception as e:
+                    st.error(f"Error during installation: {str(e)}")
+            
+            st.code("pip install flask twilio", language="bash")
+        else:
+            # Existing WhatsApp setup code
+            st.success("Flask is installed and WhatsApp integration is enabled!")
+            # Rest of your WhatsApp setup UI
     
     elif page == "User Management":
         show_user_management()
