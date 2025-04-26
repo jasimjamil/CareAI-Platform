@@ -1245,6 +1245,32 @@ def verify_password(password, stored_hash, salt):
     password_hash = hashlib.sha256((password + salt).encode()).hexdigest()
     return password_hash == stored_hash
 
+# Move these functions BEFORE run_streamlit function
+
+# Create a synchronous wrapper for async chat functions
+def sync_pharmacy_ask(chat_message):
+    """Synchronous wrapper for pharmacy_ask"""
+    # This avoids the asyncio.run() within Streamlit's own event loop
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        result = loop.run_until_complete(pharmacy_ask(chat_message))
+        return result
+    finally:
+        loop.close()
+
+def sync_infusion_ask(chat_message):
+    """Synchronous wrapper for infusion_ask"""
+    # This avoids the asyncio.run() within Streamlit's own event loop
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        result = loop.run_until_complete(process_chat_message(chat_message, "infusion"))
+        return result
+    finally:
+        loop.close()
+
+# Now define run_streamlit AFTER these functions
 def run_streamlit():
     st.set_page_config(page_title="Agentic CS Platform", layout="wide")
     
@@ -2189,26 +2215,3 @@ def setup_whatsapp_web_page():
                     st.error(f"Failed to send message. Error: {response.text}")
             except Exception as e:
                 st.error(f"Error sending message: {e}")
-
-# Create a synchronous wrapper for async chat functions
-def sync_pharmacy_ask(chat_message):
-    """Synchronous wrapper for pharmacy_ask"""
-    # This avoids the asyncio.run() within Streamlit's own event loop
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    try:
-        result = loop.run_until_complete(pharmacy_ask(chat_message))
-        return result
-    finally:
-        loop.close()
-
-def sync_infusion_ask(chat_message):
-    """Synchronous wrapper for infusion_ask"""
-    # This avoids the asyncio.run() within Streamlit's own event loop
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    try:
-        result = loop.run_until_complete(process_chat_message(chat_message, "infusion"))
-        return result
-    finally:
-        loop.close()
