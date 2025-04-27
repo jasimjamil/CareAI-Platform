@@ -1,4 +1,4 @@
-Agentic CS Platform
+
 AI-Powered Customer Service Solution
 Agentic CS is a comprehensive AI-driven customer service platform designed specifically for healthcare organizations. It enables the creation, management, and deployment of intelligent, adaptive conversational agents to handle pharmacy and infusion-related inquiries across multiple communication channels.
 
@@ -156,13 +156,4 @@ Support
 For any questions or support requests, please open an issue in the repository or contact the maintainers directly.
 
 Developed with ❤️ for the healthcare community
-
-
-
-
-
-
-
-
-
 
